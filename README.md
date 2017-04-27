@@ -1,8 +1,8 @@
 # Bunny::Tsort
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/bunny/tsort`. To experiment with that code, run `bin/console` for an interactive prompt.
+A reinvented wheel. This gem provides a simple function to perform a topological sort that yields an array of arrays of things that can be done in parallel and in order. See usage below for more.
 
-TODO: Delete this and the text above, and describe your gem
+To experiment with that code, run `bin/console` for an interactive prompt.
 
 ## Installation
 
@@ -22,7 +22,50 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+The function this gem provides is very simple. Simply call it with a hash of dependencies and it will give you an array of arrays.
+
+You can have just one task:
+
+```ruby
+> require "bunny-tsort"
+> Bunny::Tsort.tsort(wash_dishes: [])
+ => [[:wash_dishes]] 
+```
+You can have multiple tasks:
+
+```ruby
+> Bunny::Tsort.tsort(wash_dishes: [:eat], eat: [:cook], cook: [:buy_food], buy_food: [])
+ => [[:buy_food], [:cook], [:eat], [:wash_dishes]]
+```
+
+The returned array is in the order in which things have to be done. 
+
+You can omit `:buy_food => []` here because it has no dependencies and is depended on by `:cook`:
+
+```ruby
+> Bunny::Tsort.tsort(wash_dishes: [:eat], eat: [:cook], cook: [:buy_food])
+ => [[:buy_food], [:cook], [:eat], [:wash_dishes]]
+```
+
+The result will be the same.
+
+You can have multiple tasks that depend on the same thing:
+
+```ruby
+> Bunny::Tsort.tsort(buy_food: [:go_out], talk_to_friend: [:go_out])
+ => [[:go_out], [:buy_food, :talk_to_friend]] 
+```
+
+Notice the second element has 2 things. This means that since once you have done `:go_out` you can do both `:buy_food` and `:talk_to_friend` in parallel. The only hard constraint is you cannot do any of the second array until you complete the first.
+
+This is useful to know if you can do a number of things at once and want to know when you will have free hands.
+
+The function will throw an exception if you give it things which depend on each other:
+
+```ruby
+> Bunny::Tsort.tsort(lay_egg: [:hatch_chicken], hatch_chicken: [:lay_egg])
+Bunny::Tsort::CyclicGraphException: Bunny::Tsort::CyclicGraphException
+```
 
 ## Development
 
@@ -32,8 +75,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/bunny-tsort. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
-
+Bug reports and pull requests are welcome on GitHub at https://github.com/davidsiaw/bunny-tsort. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 
 ## License
 
