@@ -67,6 +67,19 @@ The function will throw an exception if you give it things which depend on each 
 Bunny::Tsort::CyclicGraphException: Bunny::Tsort::CyclicGraphException
 ```
 
+You are not constrained to using symbols as the above examples have, you can use any datatype that can be a Hash key:
+
+```ruby
+> Bunny::Tsort.tsort("funny" => [3], 1 => [2])
+ => [[3, 2], ["funny", 1]] 
+```
+
+(that is to say, the data type must implement Object#hash and Object#eql? in the way you expect)
+
+## Why no class
+
+The problem is so stupidly simple to solve a class is overkill. It will also introduce additional complexity and additional things to test. This is very simple with clearly defined inputs and outputs, and you can use it immediately without studying the structure of the objects.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
